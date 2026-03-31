@@ -1,0 +1,576 @@
+{
+  "name": "ENG-AIR-Automate Content Generator for WordPress with OpenAI copy",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "ee2ae81e-0dd1-470a-a94c-820e57060193",
+      "name": "When clicking \u2018Test workflow\u2019",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        40,
+        580
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3e8d2523-66aa-46fe-adcc-39dc78b9161e",
+              "name": "prompt",
+              "type": "string",
+              "value": "={{ $json.Prompt }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c2ce5fb2-7873-4090-90e3-ffd84c0a3fba",
+      "name": "Set your prompt",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        740,
+        580
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "title": "={{ $json.message.content }}",
+        "additionalFields": {
+          "content": "={{ $('Generate article with OpenAI').item.json.message.content }}",
+          "status": "draft"
+        }
+      },
+      "id": "8f573d04-c71c-4624-ab11-8826b8d230a8",
+      "name": "Create post on Wordpress",
+      "type": "n8n-nodes-base.wordpress",
+      "position": [
+        1380,
+        580
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ideiasnarede.com/wp-json/wp/v2/media",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wordpressApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Disposition",
+              "value": "=attachment; filename=\"copertina-{{ $('Create post on Wordpress').item.json.id }}.jpg\""
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "id": "f6ab595a-dca2-49a2-8f26-e074c040bc0b",
+      "name": "Upload image",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1820,
+        580
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://ideiasnarede.com/wp-json/wp/v2/posts/{{ $('Create post on Wordpress').item.json.id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wordpressApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "featured_media",
+              "value": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "26a625f7-8b66-4565-9491-d66445a2a425",
+      "name": "Set Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2040,
+        580
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "content": "## Target\nThis workflow is designed to automatically generate seo-friendly content for wordpress through OpenAI by giving input ideas on how to structure the article. A cover image is also generated and uploaded with OpenAI DALL-E 3. This flow is designed to be executed automatically (ad \"On a schedule\" node) and thus have a complete editorial plan.\n\nThis process is useful for blog managers who want to automate content creation and publishing.\n\n## Preliminary step\nCreate a google sheet with the following columns:\n- Date\n- Prompt\n- Title\n- Post ID\n\nFill in only the \"Prompt\" column with basic ideas that DeepSeek will work on to generate the content.",
+        "height": 380,
+        "width": 800,
+        "color": 3
+      },
+      "id": "43063fa7-2b5f-430a-a0c5-4d2470073128",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        20
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "Connect with your Airtable. This node select only rows for which no content has been generated yet in WordPress",
+        "height": 260
+      },
+      "id": "4dd9436f-6e5d-4b63-be6f-3c0864f2be3a",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        190,
+        480
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "Add your OpenAI API credential. If you want you can change the model with \"gpt-4o-mini\"",
+        "height": 260,
+        "width": 420
+      },
+      "id": "d615eea0-07b1-4620-ace1-488be3ebce94",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        900,
+        480
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "Add your WordPress API credential\n",
+        "height": 260,
+        "width": 160
+      },
+      "id": "402c688b-5f81-4420-aeba-4045afe815a4",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1360,
+        480
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "prompt": "=Generate a cinematic, high-quality, photo-realistic image to use as a blog post cover.\n\nImage Prompt:\nA visually striking, professionally composed photograph that represents the theme:\n\u201c{{ $('Generate title with OpenAI').item.json.message.content }}\u201d.\n\nStyle: realistic editorial photography, shallow depth of field, soft lighting, sigma 85mm f/1.4 lens effect.\n\nComposition: rule of thirds, subject in focus, clean and minimal background, harmonious colors.\n\nTone: professional, clean, and appropriate for a modern blog audience.\n\nDo not include: people, text, logos, watermarks, surreal or abstract elements.\n\nThe output must look like a real-world photograph and be suitable for use as a high-quality blog post cover.",
+        "options": {
+          "size": "1024x1792"
+        }
+      },
+      "id": "c0af83b4-7725-4d13-83e0-1174ea773989",
+      "name": "Generate Image with DALL-E",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        1600,
+        580
+      ],
+      "typeVersion": 1.8
+    },
+    {
+      "parameters": {
+        "content": "Add your OpenAI API credential\n",
+        "height": 260,
+        "width": 160
+      },
+      "id": "6d1f7da8-0474-40f1-903a-e152a9243c2b",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1580,
+        480
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "Upload the image on your WordPress via APIs\n",
+        "height": 260,
+        "width": 180
+      },
+      "id": "e15446b0-25fd-4074-a42b-8c4bd3552deb",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1780,
+        480
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "Set the uploaded image with the newly created article\n",
+        "height": 260,
+        "width": 180
+      },
+      "id": "cd61dfdb-058b-4d92-954a-d2c218f32bc1",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2000,
+        480
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "=gpt-4o-mini",
+          "mode": "id"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an expert SEO content writer and blogger, and an absolute expert in this field. Write a detailed, high-quality article based on the topic:\n{{ $json.prompt }}\n\n### Formatting Instructions:\n- Begin with a clear, keyword-rich `<h1>` title.\n- Add a concise summary or definition in the introduction (120 words), using `<p>`.\n- Divide the article into 4\u20135 meaningful sections with `<h2>` headings. Each section must explore a **distinct, non-overlapping** subtopic.\n- Under each `<h2>`, write 2\u20134 paragraphs (`<p>`) with deep, insightful content. Avoid shallow or generic points.\n- Use `<strong>` for emphasis and `<em>` for nuance. Include `<ul><li>` lists where appropriate.\n- End with a `<h2>Conclusion>` section summarizing the article (approx. 120 words).\n\n### Content Quality:\n- Write for an audience that wants practical, trustworthy, and well-structured answers.\n- Use a friendly, engaging, and informative tone.\n- Include rhetorical questions or transitions to guide the reader naturally.\n- Include related keywords and synonyms to boost semantic SEO.\n- Avoid repetition. Ensure each section adds new value.\n- Don\u2019t use markdown or triple backticks. Output only clean, valid HTML \u2014 no wrappers, no explanations, just the HTML.\n\n### Optional:\n- If relevant, add a short FAQ section using `<h3>` for each question and `<p>` for answers.\n\nOnly output the complete HTML article \u2014 no explanations."
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 2048
+        }
+      },
+      "id": "57bc6330-059a-4b9b-ae4b-9411945b3b79",
+      "name": "Generate article with OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        940,
+        580
+      ],
+      "typeVersion": 1.8
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "=gpt-4o-mini",
+          "mode": "id"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an expert SEO copywriter. Create a compelling, high-converting blog post title (maximum 60 characters) for the following article:\n{{ $json.message.content }}\n\n### Instructions:\n- Include the main topic keyword or variation near the beginning.\n- Make it attention-grabbing and benefit-driven.\n- Match the search intent of a user looking for this topic.\n- Use clear, strong language that encourages clicks without sounding like clickbait.\n- Avoid vague words like \u201cthings\u201d, \u201cstuff\u201d, \u201cinfo\u201d.\n- Do not use any HTML characters\n- Do not use quotation marks. The only special characters allowed are \":\" and \",\".\n- Output only the raw string containing the title \u2014 no notes, no wrappers, no code blocks.\n\nYour goal is to maximize SEO, search intent match, and reader engagement with this headline."
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 2048
+        }
+      },
+      "id": "796fb863-8f2e-4932-b71a-8e792d110cfe",
+      "name": "Generate title with OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        1160,
+        580
+      ],
+      "typeVersion": 1.8
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filter rows where \"Prompt\" is filled and \"Completed\" is empty\nconst validIdeas = items.filter(item =>\n  item.json.Prompt && !item.json.Completed\n);\n\n// Return only the first match\nreturn validIdeas.length > 0 ? [validIdeas[0]] : [];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        580
+      ],
+      "id": "ef3ac677-8827-45c5-965a-312d724cb523",
+      "name": "Filter Next Idea"
+    },
+    {
+      "parameters": {
+        "content": "Only pass 1 idea: where Prompt exists and Date is empty",
+        "height": 260,
+        "width": 200
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        480,
+        480
+      ],
+      "id": "50db2d9e-99c4-429b-8d01-f428716258a4",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appwqgkmtlYISjrMj",
+          "mode": "list",
+          "cachedResultName": "Content ideas",
+          "cachedResultUrl": "https://airtable.com/appwqgkmtlYISjrMj"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl0zkGPfsrrqGheX",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appwqgkmtlYISjrMj/tbl0zkGPfsrrqGheX"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        260,
+        580
+      ],
+      "id": "9bc322f2-9b77-46a2-8a92-cba3795555b0",
+      "name": "Get Ideas"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appwqgkmtlYISjrMj",
+          "mode": "list",
+          "cachedResultName": "Content ideas",
+          "cachedResultUrl": "https://airtable.com/appwqgkmtlYISjrMj"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl0zkGPfsrrqGheX",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appwqgkmtlYISjrMj/tbl0zkGPfsrrqGheX"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Prompt": "={{ $('Set your prompt').item.json.prompt }}",
+            "Date": "={{ $json.date }}",
+            "Title": "={{ $json.title.rendered }}",
+            "Completed": "YES"
+          },
+          "matchingColumns": [
+            "Prompt"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Prompt",
+              "displayName": "Prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Post ID",
+              "displayName": "Post ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Completed",
+              "displayName": "Completed",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2260,
+        580
+      ],
+      "id": "8bdb4ac4-c614-484a-be4f-a38f9542ca06",
+      "name": "Update Sheet"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Set Image": {
+      "main": [
+        [
+          {
+            "node": "Update Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload image": {
+      "main": [
+        [
+          {
+            "node": "Set Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set your prompt": {
+      "main": [
+        [
+          {
+            "node": "Generate article with OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create post on Wordpress": {
+      "main": [
+        [
+          {
+            "node": "Generate Image with DALL-E",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image with DALL-E": {
+      "main": [
+        [
+          {
+            "node": "Upload image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking \u2018Test workflow\u2019": {
+      "main": [
+        [
+          {
+            "node": "Get Ideas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate article with OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Generate title with OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate title with OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Create post on Wordpress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Next Idea": {
+      "main": [
+        [
+          {
+            "node": "Set your prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Ideas": {
+      "main": [
+        [
+          {
+            "node": "Filter Next Idea",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0f838bc4-b99e-43fa-a918-8f3cede2b2a5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "42184c1591d5e8c34df0f28356b74d3c02cf1cedfcbe468af7f3ff2bee14b98b"
+  },
+  "id": "kPEjw0pqA9neJRJI",
+  "tags": []
+}
